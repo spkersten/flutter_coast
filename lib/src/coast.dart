@@ -14,7 +14,6 @@ class Coast extends StatefulWidget {
     this.restorationId,
     this.scrollDirection = Axis.horizontal,
     this.reverse = false,
-    this.pageSnapping = true,
     this.onPageChanged,
     this.dragStartBehavior = DragStartBehavior.start,
     this.clipBehavior = Clip.hardEdge,
@@ -35,7 +34,6 @@ class Coast extends StatefulWidget {
   final String restorationId;
   final Axis scrollDirection;
   final bool reverse;
-  final bool pageSnapping;
   final ValueChanged<int> onPageChanged;
   final DragStartBehavior dragStartBehavior;
   final Clip clipBehavior;
@@ -178,7 +176,7 @@ class CoastState extends State<Coast> {
               restorationId: widget.restorationId,
               scrollDirection: widget.scrollDirection,
               reverse: widget.reverse,
-              pageSnapping: widget.pageSnapping,
+              pageSnapping: true,
               onPageChanged: widget.onPageChanged,
               dragStartBehavior: widget.dragStartBehavior,
               clipBehavior: widget.clipBehavior,
