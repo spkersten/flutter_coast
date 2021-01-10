@@ -1,0 +1,16 @@
+name: coast
+description: PageView wrapper that supports Hero-like animations
+version: 1.0.0
+repository: https://github.com/spkersten/flutter_coast
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

@@ -1,0 +1,17 @@
+name: example
+description: Example usage of coast
+
+publish_to: 'none'
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  coast:
+    path: ../
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
