@@ -5,26 +5,24 @@ import 'coast.dart';
 /// Analogue of [Hero] but for [Coast] and [Beach]'s instead of for [Navigator] and [Route]'s. The implementation is
 /// mostly adapted for [Hero] and related classes.
 class Crab extends StatefulWidget {
-  const Crab({@required this.tag, @required this.child, this.placeholderBuilder, this.flightShuttleBuilder, Key key})
+  const Crab({required this.tag, required this.child, this.placeholderBuilder, this.flightShuttleBuilder, Key? key})
       : super(key: key);
 
   final String tag;
   final Widget child;
-  final TransitionBuilder placeholderBuilder;
-  final CrabFlightShuttleBuilder flightShuttleBuilder;
+  final TransitionBuilder? placeholderBuilder;
+  final CrabFlightShuttleBuilder? flightShuttleBuilder;
 
   @override
   State<StatefulWidget> createState() => _CrabState();
 
   static Map<Object, _CrabState> _allCrabsFor(BuildContext context) {
-    assert(context != null);
     final result = <Object, _CrabState>{};
     void visitor(Element element) {
       if (element.widget is Crab) {
         final crab = element as StatefulElement;
         final crabWidget = element.widget as Crab;
         final Object tag = crabWidget.tag;
-        assert(tag != null);
         assert(() {
           if (result.containsKey(tag)) {
             throw FlutterError('There are multiple crabs that share the same tag within a subtree.\n'
@@ -53,14 +51,14 @@ class Crab extends StatefulWidget {
 
 class _CrabState extends State<Crab> {
   final GlobalKey _key = GlobalKey();
-  Size _placeholderSize;
+  Size? _placeholderSize;
 
   void startWalk() {
     assert(mounted);
-    final box = context.findRenderObject() as RenderBox;
+    final box = context.findRenderObject() as RenderBox?;
     assert(box != null && box.hasSize);
     setState(() {
-      _placeholderSize = box.size;
+      _placeholderSize = box!.size;
     });
   }
 
@@ -76,9 +74,9 @@ class _CrabState extends State<Crab> {
   Widget build(BuildContext context) {
     if (_placeholderSize != null) {
       if (widget.placeholderBuilder == null) {
-        return SizedBox(width: _placeholderSize.width, height: _placeholderSize.height);
+        return SizedBox(width: _placeholderSize!.width, height: _placeholderSize!.height);
       } else {
-        return widget.placeholderBuilder(context, widget.child);
+        return widget.placeholderBuilder!(context, widget.child);
       }
     }
     return KeyedSubtree(
@@ -96,7 +94,7 @@ typedef CrabFlightShuttleBuilder = Widget Function(
   Animation<double> animation,
   BeachTransitionDirection direction,
   BuildContext fromCrabContext,
-  BuildContext toCrabContext,
+  BuildContext? toCrabContext,
 );
 
 /// Adapted from [HeroController], animates matching [Crab]'s when transitioning between [Beach]es.
@@ -110,13 +108,13 @@ class CrabController extends CoastObserver {
     Beach beach,
     Beach previousBeach,
     BeachTransitionDirection direction,
-    Animation<double> progress,
+    Animation<double>? progress,
   ) {
     if (previousBeach.subtreeContext == null) return;
 
-    final fromCrabs = Crab._allCrabsFor(previousBeach.subtreeContext);
+    final fromCrabs = Crab._allCrabsFor(previousBeach.subtreeContext!);
 
-    final overlay = coast.overlay;
+    final overlay = coast.overlay!;
     final overlayRect = _globalBoundingBoxFor(overlay.context);
 
     /// Because [beach] hasn't been laid out yet, we don't know the rects of that Crabs
@@ -125,28 +123,28 @@ class CrabController extends CoastObserver {
     /// start a walk for all [Crabs] to the same position on screen, keeping them stationary.
     /// In the post frame callback, we update the walk with the target rect for the Crab.
     for (final tag in fromCrabs.keys) {
-      final fromShuttleBuilder = fromCrabs[tag].widget.flightShuttleBuilder;
+      final CrabFlightShuttleBuilder? fromShuttleBuilder = fromCrabs[tag]!.widget.flightShuttleBuilder;
       final shuttleBuilder = fromShuttleBuilder ?? _defaultHeroFlightShuttleBuilder;
 
       _walks[tag] = _CrabWalk(
-        fromCrab: fromCrabs[tag],
+        fromCrab: fromCrabs[tag]!,
         toCrab: null,
-        progress: progress,
+        progress: progress!,
         overlay: overlay,
         overlayRect: overlayRect,
         direction: direction,
-        fromCrabContext: previousBeach.subtreeContext,
+        fromCrabContext: previousBeach.subtreeContext!,
         toCrabContext: beach.subtreeContext,
         shuttleBuilder: shuttleBuilder,
       )..start();
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((Duration value) {
-      final toCrabs = Crab._allCrabsFor(beach.subtreeContext);
+    WidgetsBinding.instance!.addPostFrameCallback((Duration value) {
+      final toCrabs = Crab._allCrabsFor(beach.subtreeContext!);
 
       for (final tag in _walks.keys) {
         if (toCrabs[tag] != null) {
-          _walks[tag].update(toCrabs[tag], beach.subtreeContext);
+          _walks[tag]!.update(toCrabs[tag]!, beach.subtreeContext!);
         }
       }
     });
@@ -157,7 +155,7 @@ class CrabController extends CoastObserver {
     Animation<double> animation,
     BeachTransitionDirection flightDirection,
     BuildContext fromCrabContext,
-    BuildContext toCrabContext,
+    BuildContext? toCrabContext,
   ) {
     if (toCrabContext != null) {
       final toCrab = toCrabContext.widget as Crab;
@@ -171,30 +169,30 @@ class CrabController extends CoastObserver {
 
 class _CrabWalk {
   _CrabWalk({
-    @required this.fromCrab,
-    @required this.toCrab,
-    @required this.progress,
-    @required this.overlay,
-    @required this.overlayRect,
-    @required this.direction,
-    @required this.fromCrabContext,
-    @required this.toCrabContext,
-    @required this.shuttleBuilder,
+    required this.fromCrab,
+    required this.toCrab,
+    required this.progress,
+    required this.overlay,
+    required this.overlayRect,
+    required this.direction,
+    required this.fromCrabContext,
+    required this.toCrabContext,
+    required this.shuttleBuilder,
   });
 
   final _CrabState fromCrab;
-  _CrabState toCrab;
+  _CrabState? toCrab;
   final Animation<double> progress;
   final OverlayState overlay;
   final Rect overlayRect;
   final BeachTransitionDirection direction;
   final BuildContext fromCrabContext;
-  BuildContext toCrabContext;
+  BuildContext? toCrabContext;
   final CrabFlightShuttleBuilder shuttleBuilder;
 
-  OverlayEntry _overlayEntry;
+  OverlayEntry? _overlayEntry;
 
-  Tween<Rect> _crabRectTween;
+  late Tween<Rect?> _crabRectTween;
 
   void start() {
     progress.addStatusListener(_handleAnimationStatusUpdates);
@@ -207,23 +205,23 @@ class _CrabWalk {
     fromCrab.startWalk();
 
     _overlayEntry = _createOverlayEntry();
-    overlay.insert(_overlayEntry);
+    overlay.insert(_overlayEntry!);
   }
 
   void update(_CrabState newToCrab, BuildContext newToCrabContext) {
     toCrab = newToCrab;
     toCrabContext = newToCrabContext;
 
-    toCrab.startWalk();
+    toCrab!.startWalk();
 
     _crabRectTween = RectTween(
       begin: _globalBoundingBoxFor(fromCrab.context, ancestor: fromCrabContext.findRenderObject()),
-      end: _globalBoundingBoxFor(toCrab.context, ancestor: toCrabContext.findRenderObject()),
+      end: _globalBoundingBoxFor(toCrab!.context, ancestor: toCrabContext!.findRenderObject()),
     );
 
     _overlayEntry?.remove();
     _overlayEntry = _createOverlayEntry();
-    overlay.insert(_overlayEntry);
+    overlay.insert(_overlayEntry!);
   }
 
   OverlayEntry _createOverlayEntry() => OverlayEntry(
@@ -233,7 +231,7 @@ class _CrabWalk {
           return AnimatedBuilder(
             animation: progress,
             builder: (context, child) {
-              final rect = _crabRectTween.evaluate(progress);
+              final rect = _crabRectTween.evaluate(progress)!;
               final size = overlayRect.size;
               final offsets = RelativeRect.fromSize(rect, size);
 
@@ -254,7 +252,7 @@ class _CrabWalk {
 
   void _handleAnimationStatusUpdates(AnimationStatus status) {
     if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
-      _overlayEntry.remove();
+      _overlayEntry!.remove();
       _overlayEntry = null;
 
       fromCrab.endWalk();
@@ -263,8 +261,8 @@ class _CrabWalk {
   }
 }
 
-Rect _globalBoundingBoxFor(BuildContext context, {RenderObject ancestor}) {
+Rect _globalBoundingBoxFor(BuildContext context, {RenderObject? ancestor}) {
   final box = context.findRenderObject() as RenderBox;
-  assert(box != null && box.hasSize);
+  assert(box.hasSize);
   return MatrixUtils.transformRect(box.getTransformTo(ancestor), Offset.zero & box.size);
 }

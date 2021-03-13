@@ -108,8 +108,8 @@ void main() {
 
     group('Event handling', () {
       final updates = <AnimationStatus>[];
-      StreamController<AnimationStatus> animationUpdates;
-      TransitionAnimation sut;
+      late StreamController<AnimationStatus> animationUpdates;
+      late TransitionAnimation sut;
 
       setUp(() async {
         animationUpdates = StreamController<AnimationStatus>(sync: true);
