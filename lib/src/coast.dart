@@ -64,7 +64,7 @@ class CoastController {
 class CoastState extends State<Coast> {
   late double _previousOffset;
   TransitionAnimation? progress;
-  late int _sourcePage;
+  int? _sourcePage;
   int? _targetPage;
 
   final _overlayKey =
@@ -97,8 +97,8 @@ class CoastState extends State<Coast> {
         if (offset == _previousOffset) return;
 
         // Determine between which two pages we are scrolling
-        final newSourcePage =
-            calculateNewSourcePage(offset: offset, sourcePage: _sourcePage);
+        final newSourcePage = calculateNewSourcePage(
+            offset: offset, sourcePage: _sourcePage ?? 0);
 
         final newTargetPage = calculateNewTargetPage(
             offset: offset, newSourcePage: newSourcePage);
@@ -107,7 +107,7 @@ class CoastState extends State<Coast> {
             newTargetPage: newTargetPage, newSourcePage: newSourcePage)) {
           // Finish previous transition
           progress
-            ?..value = (newSourcePage < _sourcePage) ? 0.0 : 1.0
+            ?..value = (newSourcePage < (_sourcePage ?? 0)) ? 0.0 : 1.0
             ..dispose();
           progress = null;
           _targetPage = null;
@@ -119,7 +119,7 @@ class CoastState extends State<Coast> {
           // Start new a transition
           _targetPage = newTargetPage;
 
-          final direction = _targetPage! > _sourcePage
+          final direction = _targetPage! > (_sourcePage ?? 0)
               ? BeachTransitionDirection.right
               : BeachTransitionDirection.left;
 
@@ -128,16 +128,19 @@ class CoastState extends State<Coast> {
           for (final observer in widget.observers ?? <CoastObserver>[]) {
             observer.coast = this;
             observer.startTransition(widget.beaches[_targetPage!],
-                widget.beaches[_sourcePage], direction, progress);
+                widget.beaches[(_sourcePage ?? 0)], direction, progress);
           }
         }
 
         // Update progress of the transition that is in progress
         if (progress != null) {
-          if (_targetPage! > _sourcePage)
-            progress!.value = offset - _sourcePage;
+          if (_sourcePage == null) {
+            _sourcePage = 0;
+          }
+          if (_targetPage! > _sourcePage!)
+            progress!.value = offset - _sourcePage!;
           else
-            progress!.value = _sourcePage - offset;
+            progress!.value = _sourcePage! - offset;
         }
 
         _previousOffset = offset;
@@ -302,7 +305,7 @@ class TransitionAnimation extends Animation<double>
       return AnimationStatus.reverse;
     } else {
       //this can never happen but is a fallback scenario
-      return null;
+      return AnimationStatus.dismissed;
     }
   }
 
