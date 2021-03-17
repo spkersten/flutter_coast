@@ -150,14 +150,13 @@ class CoastState extends State<Coast> {
     else if (offset < newSourcePage)
       return newSourcePage - 1;
     else
-      return null; // ignore: avoid_returning_null
+      return null;
   }
 
   @visibleForTesting
   bool shouldFinishTransition({int? newTargetPage, int? newSourcePage}) =>
       progress != null && (_targetPage != newTargetPage || _sourcePage != newSourcePage);
 
-  @visibleForTesting
   bool shouldStartNewTransition({int? newTargetPage}) => progress == null && newTargetPage != null;
 
   @override

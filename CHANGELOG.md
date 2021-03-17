@@ -1,3 +1,7 @@
+## 2.0.0
+
+* Null-safety
+
 ## 1.0.2
 
 * Remove accidentally exposed page snapping property
