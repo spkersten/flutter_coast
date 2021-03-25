@@ -17,7 +17,7 @@ class _CoastExampleAppState extends State<CoastExampleApp> {
     Beach(builder: (context) => Zoutelande()),
   ];
 
-  final _coastController = CoastController();
+  final _coastController = CoastController(initialPage: 1);
 
   @override
   Widget build(BuildContext context) {

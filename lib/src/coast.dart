@@ -40,6 +40,10 @@ class Coast extends StatefulWidget {
 }
 
 class CoastController {
+  CoastController({initialPage = 0}) : _pageController = PageController(keepPage: true, initialPage: initialPage);
+
+  final _pageController;
+
   double? get beach => _pageController.page;
 
   void dispose() {
@@ -53,8 +57,6 @@ class CoastController {
   }) async {
     await _pageController.animateToPage(beach, duration: duration, curve: curve);
   }
-
-  final _pageController = PageController(keepPage: true);
 }
 
 class CoastState extends State<Coast> {
@@ -78,7 +80,7 @@ class CoastState extends State<Coast> {
   void initState() {
     super.initState();
 
-    _sourcePage = 0;
+    _sourcePage = pageController.initialPage;
     _previousOffset = 0.0;
 
     pageController.addListener(() {
@@ -157,6 +159,7 @@ class CoastState extends State<Coast> {
   bool shouldFinishTransition({int? newTargetPage, int? newSourcePage}) =>
       progress != null && (_targetPage != newTargetPage || _sourcePage != newSourcePage);
 
+  @visibleForTesting
   bool shouldStartNewTransition({int? newTargetPage}) => progress == null && newTargetPage != null;
 
   @override

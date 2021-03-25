@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Allow settings the initial page
+
 ## 2.0.0
 
 * Null-safety
