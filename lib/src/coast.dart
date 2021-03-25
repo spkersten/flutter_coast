@@ -40,6 +40,12 @@ class Coast extends StatefulWidget {
 }
 
 class CoastController {
+  CoastController({initialPage = 0})
+      : _pageController =
+            PageController(keepPage: true, initialPage: initialPage);
+
+  final _pageController;
+
   double? get beach => _pageController.page;
 
   void dispose() {
@@ -54,8 +60,6 @@ class CoastController {
     await _pageController.animateToPage(beach,
         duration: duration, curve: curve);
   }
-
-  final _pageController = PageController(keepPage: true, initialPage: 1);
 }
 
 class CoastState extends State<Coast> {
