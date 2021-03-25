@@ -51,10 +51,11 @@ class CoastController {
     Duration duration = const Duration(milliseconds: 200),
     Curve curve = Curves.fastOutSlowIn,
   }) async {
-    await _pageController.animateToPage(beach, duration: duration, curve: curve);
+    await _pageController.animateToPage(beach,
+        duration: duration, curve: curve);
   }
 
-  final _pageController = PageController(keepPage: true);
+  final _pageController = PageController(keepPage: true, initialPage: 1);
 }
 
 class CoastState extends State<Coast> {
@@ -63,7 +64,8 @@ class CoastState extends State<Coast> {
   int? _sourcePage;
   int? _targetPage;
 
-  final _overlayKey = GlobalKey<OverlayState>(debugLabel: "CoastState's Overlay");
+  final _overlayKey =
+      GlobalKey<OverlayState>(debugLabel: "CoastState's Overlay");
 
   OverlayState? get overlay => _overlayKey.currentState;
 
@@ -83,15 +85,20 @@ class CoastState extends State<Coast> {
 
     pageController.addListener(() {
       // Get rid of over-scrolling
-      final offset = _round(pageController.page!.clamp(0.0, widget.beaches.length - 1).toDouble(), 6);
+      final offset = _round(
+          pageController.page!.clamp(0.0, widget.beaches.length - 1).toDouble(),
+          6);
       if (offset == _previousOffset) return;
 
       // Determine between which two pages we are scrolling
-      final newSourcePage = calculateNewSourcePage(offset: offset, sourcePage: _sourcePage ?? 0);
+      final newSourcePage =
+          calculateNewSourcePage(offset: offset, sourcePage: _sourcePage ?? 0);
 
-      final newTargetPage = calculateNewTargetPage(offset: offset, newSourcePage: newSourcePage);
+      final newTargetPage =
+          calculateNewTargetPage(offset: offset, newSourcePage: newSourcePage);
 
-      if (shouldFinishTransition(newTargetPage: newTargetPage, newSourcePage: newSourcePage)) {
+      if (shouldFinishTransition(
+          newTargetPage: newTargetPage, newSourcePage: newSourcePage)) {
         // Finish previous transition
         progress
           ?..value = (newSourcePage < (_sourcePage ?? 0)) ? 0.0 : 1.0
@@ -106,15 +113,16 @@ class CoastState extends State<Coast> {
         // Start new a transition
         _targetPage = newTargetPage;
 
-        final direction =
-            _targetPage! > (_sourcePage ?? 0) ? BeachTransitionDirection.right : BeachTransitionDirection.left;
+        final direction = _targetPage! > (_sourcePage ?? 0)
+            ? BeachTransitionDirection.right
+            : BeachTransitionDirection.left;
 
         progress = TransitionAnimation();
 
         for (final observer in widget.observers ?? <CoastObserver>[]) {
           observer.coast = this;
-          observer.startTransition(
-              widget.beaches[_targetPage!], widget.beaches[(_sourcePage ?? 0)], direction, progress);
+          observer.startTransition(widget.beaches[_targetPage!],
+              widget.beaches[(_sourcePage ?? 0)], direction, progress);
         }
       }
 
@@ -134,7 +142,8 @@ class CoastState extends State<Coast> {
   }
 
   @visibleForTesting
-  int calculateNewSourcePage({required double offset, required int sourcePage}) {
+  int calculateNewSourcePage(
+      {required double offset, required int sourcePage}) {
     if (offset >= (sourcePage + 1))
       return sourcePage + (offset - sourcePage).floor();
     else if (offset <= (sourcePage - 1))
@@ -144,7 +153,8 @@ class CoastState extends State<Coast> {
   }
 
   @visibleForTesting
-  int? calculateNewTargetPage({required double offset, required int newSourcePage}) {
+  int? calculateNewTargetPage(
+      {required double offset, required int newSourcePage}) {
     if (offset > newSourcePage)
       return newSourcePage + 1;
     else if (offset < newSourcePage)
@@ -155,10 +165,12 @@ class CoastState extends State<Coast> {
 
   @visibleForTesting
   bool shouldFinishTransition({int? newTargetPage, int? newSourcePage}) =>
-      progress != null && (_targetPage != newTargetPage || _sourcePage != newSourcePage);
+      progress != null &&
+      (_targetPage != newTargetPage || _sourcePage != newSourcePage);
 
   @visibleForTesting
-  bool shouldStartNewTransition({int? newTargetPage}) => progress == null && newTargetPage != null;
+  bool shouldStartNewTransition({int? newTargetPage}) =>
+      progress == null && newTargetPage != null;
 
   @override
   Widget build(BuildContext context) => _DeclarativeOverlay(
@@ -171,7 +183,8 @@ class CoastState extends State<Coast> {
             child: PageView(
               controller: pageController,
               physics: widget.physics,
-              children: widget.beaches.map((beach) => beach.build(context)).toList(),
+              children:
+                  widget.beaches.map((beach) => beach.build(context)).toList(),
               allowImplicitScrolling: widget.allowImplicitScrolling,
               restorationId: widget.restorationId,
               scrollDirection: widget.scrollDirection,
@@ -187,7 +200,9 @@ class CoastState extends State<Coast> {
 }
 
 class _DeclarativeOverlay extends StatefulWidget {
-  const _DeclarativeOverlay({required this.child, required this.overlayKey, Key? key}) : super(key: key);
+  const _DeclarativeOverlay(
+      {required this.child, required this.overlayKey, Key? key})
+      : super(key: key);
 
   final Widget child;
   final Key overlayKey;
@@ -231,7 +246,8 @@ class Beach {
 
   BuildContext? get subtreeContext => _subtreeKey.currentContext;
 
-  Widget build(BuildContext context) => RepaintBoundary(key: _subtreeKey, child: Builder(builder: builder));
+  Widget build(BuildContext context) =>
+      RepaintBoundary(key: _subtreeKey, child: Builder(builder: builder));
 }
 
 class CoastObserver {
@@ -239,14 +255,17 @@ class CoastObserver {
 
   /// [progress] will animate between 0 and 1. It will always start at 0, and end either at 1 (when the transition
   /// completes) or at 0 (when the transition is cancelled).
-  void startTransition(
-      Beach beach, Beach previousBeach, BeachTransitionDirection direction, Animation<double>? progress) {}
+  void startTransition(Beach beach, Beach previousBeach,
+      BeachTransitionDirection direction, Animation<double>? progress) {}
 }
 
 enum BeachTransitionDirection { left, right }
 
 class TransitionAnimation extends Animation<double>
-    with AnimationLocalListenersMixin, AnimationLocalStatusListenersMixin, AnimationEagerListenerMixin {
+    with
+        AnimationLocalListenersMixin,
+        AnimationLocalStatusListenersMixin,
+        AnimationEagerListenerMixin {
   double _value = 0.0;
   AnimationStatus? _status = AnimationStatus.dismissed;
 
