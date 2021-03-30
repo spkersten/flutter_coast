@@ -62,7 +62,7 @@ class CoastController {
 class CoastState extends State<Coast> {
   late double _previousOffset;
   TransitionAnimation? progress;
-  int? _sourcePage;
+  late int _sourcePage;
   int? _targetPage;
 
   final _overlayKey = GlobalKey<OverlayState>(debugLabel: "CoastState's Overlay");
@@ -89,14 +89,14 @@ class CoastState extends State<Coast> {
       if (offset == _previousOffset) return;
 
       // Determine between which two pages we are scrolling
-      final newSourcePage = calculateNewSourcePage(offset: offset, sourcePage: _sourcePage ?? 0);
+      final newSourcePage = calculateNewSourcePage(offset: offset, sourcePage: _sourcePage);
 
       final newTargetPage = calculateNewTargetPage(offset: offset, newSourcePage: newSourcePage);
 
       if (shouldFinishTransition(newTargetPage: newTargetPage, newSourcePage: newSourcePage)) {
         // Finish previous transition
         progress
-          ?..value = (newSourcePage < (_sourcePage ?? 0)) ? 0.0 : 1.0
+          ?..value = (newSourcePage < _sourcePage) ? 0.0 : 1.0
           ..dispose();
         progress = null;
         _targetPage = null;
@@ -108,27 +108,22 @@ class CoastState extends State<Coast> {
         // Start new a transition
         _targetPage = newTargetPage;
 
-        final direction =
-            _targetPage! > (_sourcePage ?? 0) ? BeachTransitionDirection.right : BeachTransitionDirection.left;
+        final direction = _targetPage! > _sourcePage ? BeachTransitionDirection.right : BeachTransitionDirection.left;
 
         progress = TransitionAnimation();
 
         for (final observer in widget.observers ?? <CoastObserver>[]) {
           observer.coast = this;
-          observer.startTransition(
-              widget.beaches[_targetPage!], widget.beaches[(_sourcePage ?? 0)], direction, progress);
+          observer.startTransition(widget.beaches[_targetPage!], widget.beaches[_sourcePage], direction, progress);
         }
       }
 
       // Update progress of the transition that is in progress
       if (progress != null) {
-        if (_sourcePage == null) {
-          _sourcePage = 0;
-        }
-        if (_targetPage! > _sourcePage!)
-          progress!.value = offset - _sourcePage!;
+        if (_targetPage! > _sourcePage)
+          progress!.value = offset - _sourcePage;
         else
-          progress!.value = _sourcePage! - offset;
+          progress!.value = _sourcePage - offset;
       }
 
       _previousOffset = offset;
