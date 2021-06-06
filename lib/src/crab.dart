@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'coast.dart';
@@ -5,8 +6,13 @@ import 'coast.dart';
 /// Analogue of [Hero] but for [Coast] and [Beach]'s instead of for [Navigator] and [Route]'s. The implementation is
 /// mostly adapted for [Hero] and related classes.
 class Crab extends StatefulWidget {
-  const Crab({required this.tag, required this.child, this.placeholderBuilder, this.flightShuttleBuilder, Key? key})
-      : super(key: key);
+  const Crab({
+    required this.tag,
+    required this.child,
+    this.placeholderBuilder,
+    this.flightShuttleBuilder,
+    Key? key,
+  }) : super(key: key);
 
   final String tag;
   final Widget child;
@@ -46,6 +52,15 @@ class Crab extends StatefulWidget {
 
     context.visitChildElements(visitor);
     return result;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('tag', tag))
+      ..add(ObjectFlagProperty<TransitionBuilder?>.has('placeholderBuilder', placeholderBuilder))
+      ..add(ObjectFlagProperty<CrabFlightShuttleBuilder?>.has('flightShuttleBuilder', flightShuttleBuilder));
   }
 }
 
@@ -110,7 +125,9 @@ class CrabController extends CoastObserver {
     BeachTransitionDirection direction,
     Animation<double>? progress,
   ) {
-    if (previousBeach.subtreeContext == null) return;
+    if (previousBeach.subtreeContext == null) {
+      return;
+    }
 
     final fromCrabs = Crab._allCrabsFor(previousBeach.subtreeContext!);
 
@@ -123,7 +140,7 @@ class CrabController extends CoastObserver {
     /// start a walk for all [Crabs] to the same position on screen, keeping them stationary.
     /// In the post frame callback, we update the walk with the target rect for the Crab.
     for (final tag in fromCrabs.keys) {
-      final CrabFlightShuttleBuilder? fromShuttleBuilder = fromCrabs[tag]!.widget.flightShuttleBuilder;
+      final fromShuttleBuilder = fromCrabs[tag]!.widget.flightShuttleBuilder;
       final shuttleBuilder = fromShuttleBuilder ?? _defaultHeroFlightShuttleBuilder;
 
       _walks[tag] = _CrabWalk(
@@ -139,7 +156,7 @@ class CrabController extends CoastObserver {
       )..start();
     }
 
-    WidgetsBinding.instance!.addPostFrameCallback((Duration value) {
+    WidgetsBinding.instance!.addPostFrameCallback((value) {
       final toCrabs = Crab._allCrabsFor(beach.subtreeContext!);
 
       for (final tag in _walks.keys) {
@@ -262,7 +279,7 @@ class _CrabWalk {
 }
 
 Rect _globalBoundingBoxFor(BuildContext context, {RenderObject? ancestor}) {
-  final box = context.findRenderObject() as RenderBox;
+  final box = (context.findRenderObject() as RenderBox?)!;
   assert(box.hasSize);
   return MatrixUtils.transformRect(box.getTransformTo(ancestor), Offset.zero & box.size);
 }

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
@@ -37,12 +38,29 @@ class Coast extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => CoastState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Beach>('beaches', beaches))
+      ..add(IterableProperty<CoastObserver>('observers', observers))
+      ..add(DiagnosticsProperty<CoastController>('controller', controller))
+      ..add(DiagnosticsProperty<ScrollPhysics?>('physics', physics))
+      ..add(DiagnosticsProperty<bool>('allowImplicitScrolling', allowImplicitScrolling))
+      ..add(StringProperty('restorationId', restorationId))
+      ..add(EnumProperty<Axis>('scrollDirection', scrollDirection))
+      ..add(DiagnosticsProperty<bool>('reverse', reverse))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onPageChanged', onPageChanged))
+      ..add(EnumProperty<DragStartBehavior>('dragStartBehavior', dragStartBehavior))
+      ..add(EnumProperty<Clip>('clipBehavior', clipBehavior));
+  }
 }
 
 class CoastController {
-  CoastController({initialPage = 0}) : _pageController = PageController(keepPage: true, initialPage: initialPage);
+  CoastController({int initialPage = 0}) : _pageController = PageController(initialPage: initialPage);
 
-  final _pageController;
+  final PageController _pageController;
 
   double? get beach => _pageController.page;
 
@@ -62,14 +80,14 @@ class CoastController {
 class CoastState extends State<Coast> {
   late double _previousOffset;
   TransitionAnimation? progress;
-  late int _sourcePage;
+  int _sourcePage = 0;
   int? _targetPage;
 
   final _overlayKey = GlobalKey<OverlayState>(debugLabel: "CoastState's Overlay");
 
   OverlayState? get overlay => _overlayKey.currentState;
 
-  PageController get pageController => widget.controller._pageController;
+  PageController get _pageController => widget.controller._pageController;
 
   double _round(double value, int precision) {
     final f = pow(10, precision);
@@ -80,13 +98,15 @@ class CoastState extends State<Coast> {
   void initState() {
     super.initState();
 
-    _sourcePage = pageController.initialPage;
+    _sourcePage = _pageController.initialPage;
     _previousOffset = 0.0;
 
-    pageController.addListener(() {
+    _pageController.addListener(() {
       // Get rid of over-scrolling
-      final offset = _round(pageController.page!.clamp(0.0, widget.beaches.length - 1).toDouble(), 6);
-      if (offset == _previousOffset) return;
+      final offset = _round(_pageController.page!.clamp(0.0, widget.beaches.length - 1).toDouble(), 6);
+      if (offset == _previousOffset) {
+        return;
+      }
 
       // Determine between which two pages we are scrolling
       final newSourcePage = calculateNewSourcePage(offset: offset, sourcePage: _sourcePage);
@@ -113,17 +133,19 @@ class CoastState extends State<Coast> {
         progress = TransitionAnimation();
 
         for (final observer in widget.observers ?? <CoastObserver>[]) {
-          observer.coast = this;
-          observer.startTransition(widget.beaches[_targetPage!], widget.beaches[_sourcePage], direction, progress);
+          observer
+            ..coast = this
+            ..startTransition(widget.beaches[_targetPage!], widget.beaches[_sourcePage], direction, progress);
         }
       }
 
       // Update progress of the transition that is in progress
       if (progress != null) {
-        if (_targetPage! > _sourcePage)
+        if (_targetPage! > _sourcePage) {
           progress!.value = offset - _sourcePage;
-        else
+        } else {
           progress!.value = _sourcePage - offset;
+        }
       }
 
       _previousOffset = offset;
@@ -132,22 +154,24 @@ class CoastState extends State<Coast> {
 
   @visibleForTesting
   int calculateNewSourcePage({required double offset, required int sourcePage}) {
-    if (offset >= (sourcePage + 1))
+    if (offset >= (sourcePage + 1)) {
       return sourcePage + (offset - sourcePage).floor();
-    else if (offset <= (sourcePage - 1))
+    } else if (offset <= (sourcePage - 1)) {
       return sourcePage - (sourcePage - offset).floor();
-    else
+    } else {
       return sourcePage;
+    }
   }
 
   @visibleForTesting
   int? calculateNewTargetPage({required double offset, required int newSourcePage}) {
-    if (offset > newSourcePage)
+    if (offset > newSourcePage) {
       return newSourcePage + 1;
-    else if (offset < newSourcePage)
+    } else if (offset < newSourcePage) {
       return newSourcePage - 1;
-    else
+    } else {
       return null;
+    }
   }
 
   @visibleForTesting
@@ -166,9 +190,8 @@ class CoastState extends State<Coast> {
             Temporary fix to round the width till the issue is fixed */
             width: constraints.maxWidth.roundToDouble(),
             child: PageView(
-              controller: pageController,
+              controller: _pageController,
               physics: widget.physics,
-              children: widget.beaches.map((beach) => beach.build(context)).toList(),
               allowImplicitScrolling: widget.allowImplicitScrolling,
               restorationId: widget.restorationId,
               scrollDirection: widget.scrollDirection,
@@ -177,10 +200,19 @@ class CoastState extends State<Coast> {
               onPageChanged: widget.onPageChanged,
               dragStartBehavior: widget.dragStartBehavior,
               clipBehavior: widget.clipBehavior,
+              children: widget.beaches.map((beach) => beach.build(context)).toList(),
             ),
           ),
         ),
       );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<TransitionAnimation?>('progress', progress))
+      ..add(DiagnosticsProperty<OverlayState?>('overlay', overlay));
+  }
 }
 
 class _DeclarativeOverlay extends StatefulWidget {
@@ -191,6 +223,12 @@ class _DeclarativeOverlay extends StatefulWidget {
 
   @override
   _DeclarativeOverlayState createState() => _DeclarativeOverlayState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Key>('overlayKey', overlayKey));
+  }
 }
 
 class _DeclarativeOverlayState extends State<_DeclarativeOverlay> {
@@ -208,7 +246,9 @@ class _DeclarativeOverlayState extends State<_DeclarativeOverlay> {
   @override
   void didUpdateWidget(_DeclarativeOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.child != widget.child) _childEntry.markNeedsBuild();
+    if (oldWidget.child != widget.child) {
+      _childEntry.markNeedsBuild();
+    }
   }
 
   @override
@@ -244,7 +284,7 @@ enum BeachTransitionDirection { left, right }
 
 class TransitionAnimation extends Animation<double>
     with AnimationLocalListenersMixin, AnimationLocalStatusListenersMixin, AnimationEagerListenerMixin {
-  double _value = 0.0;
+  double _value = 0;
   AnimationStatus? _status = AnimationStatus.dismissed;
 
   @override

@@ -38,7 +38,7 @@ void main() {
       });
 
       test('return null when offset equals sourcePage', () {
-        expect(sut.calculateNewTargetPage(offset: 3.0, newSourcePage: 3), null);
+        expect(sut.calculateNewTargetPage(offset: 3, newSourcePage: 3), null);
       });
     });
 
@@ -86,11 +86,11 @@ void main() {
       final sut = TransitionAnimation();
 
       test('should return dismissed in case value 0', () {
-        expect(sut.calculateStatus(0.0), AnimationStatus.dismissed);
+        expect(sut.calculateStatus(0), AnimationStatus.dismissed);
       });
 
       test('should return completed in case value 1', () {
-        expect(sut.calculateStatus(1.0), AnimationStatus.completed);
+        expect(sut.calculateStatus(1), AnimationStatus.completed);
       });
 
       test('should return forward in case newvalue is bigger then previous value', () {
