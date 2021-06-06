@@ -1,0 +1,26 @@
+name: Build
+on:
+  schedule:
+    # Daily at 1pm
+    - cron: 0 13 * * *
+  workflow_dispatch:
+jobs:
+  check_code_generation:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter_version: [ '' ]  # Latest
+        flutter_channel: [ 'stable', 'beta' ]
+        include:
+          - flutter_version: '2.2.0'
+            flutter_channel: 'stable'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ matrix.flutter_channel }}
+          flutter-version: ${{ matrix.flutter_version }}
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
