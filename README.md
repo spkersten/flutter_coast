@@ -1,5 +1,7 @@
 # coast
 
+![build](https://github.com/spkersten/flutter_coast/actions/workflows/master.yml/badge.svg?branch=master)
+
 PageView wrapper supporting Hero-like animations
 
 ![img/example](img/example.gif)
