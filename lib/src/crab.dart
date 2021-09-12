@@ -123,7 +123,7 @@ class CrabController extends CoastObserver {
     Beach beach,
     Beach previousBeach,
     BeachTransitionDirection direction,
-    Animation<double>? progress,
+    Animation<double> progress,
   ) {
     if (previousBeach.subtreeContext == null) {
       return;
@@ -140,13 +140,13 @@ class CrabController extends CoastObserver {
     /// start a walk for all [Crabs] to the same position on screen, keeping them stationary.
     /// In the post frame callback, we update the walk with the target rect for the Crab.
     for (final tag in fromCrabs.keys) {
-      final fromShuttleBuilder = fromCrabs[tag]!.widget.flightShuttleBuilder;
+      final fromShuttleBuilder = fromCrabs[tag]?.widget.flightShuttleBuilder;
       final shuttleBuilder = fromShuttleBuilder ?? _defaultHeroFlightShuttleBuilder;
 
       _walks[tag] = _CrabWalk(
         fromCrab: fromCrabs[tag]!,
         toCrab: null,
-        progress: progress!,
+        progress: progress,
         overlay: overlay,
         overlayRect: overlayRect,
         direction: direction,
@@ -157,11 +157,15 @@ class CrabController extends CoastObserver {
     }
 
     WidgetsBinding.instance!.addPostFrameCallback((value) {
-      final toCrabs = Crab._allCrabsFor(beach.subtreeContext!);
+      final context = beach.subtreeContext;
+      if (context != null) {
+        final toCrabs = Crab._allCrabsFor(context);
 
-      for (final tag in _walks.keys) {
-        if (toCrabs[tag] != null) {
-          _walks[tag]!.update(toCrabs[tag]!, beach.subtreeContext!);
+        for (final tag in _walks.keys) {
+          final toCrab = toCrabs[tag];
+          if (toCrab != null) {
+            _walks[tag]!.update(toCrab, context);
+          }
         }
       }
     });

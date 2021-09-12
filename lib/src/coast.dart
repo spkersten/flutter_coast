@@ -57,15 +57,19 @@ class Coast extends StatefulWidget {
   }
 }
 
-class CoastController {
-  CoastController({int initialPage = 0}) : _pageController = PageController(initialPage: initialPage);
+class CoastController extends ChangeNotifier {
+  CoastController({int initialPage = 0}) : _pageController = PageController(initialPage: initialPage) {
+    _pageController.addListener(_listener);
+  }
 
   final PageController _pageController;
 
   double? get beach => _pageController.page;
 
+  @override
   void dispose() {
     _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> animateTo({
@@ -74,6 +78,10 @@ class CoastController {
     Curve curve = Curves.fastOutSlowIn,
   }) async {
     await _pageController.animateToPage(beach, duration: duration, curve: curve);
+  }
+
+  void _listener() {
+    notifyListeners();
   }
 }
 
@@ -135,7 +143,7 @@ class CoastState extends State<Coast> {
         for (final observer in widget.observers ?? <CoastObserver>[]) {
           observer
             ..coast = this
-            ..startTransition(widget.beaches[_targetPage!], widget.beaches[_sourcePage], direction, progress);
+            ..startTransition(widget.beaches[_targetPage!], widget.beaches[_sourcePage], direction, progress!);
         }
       }
 
@@ -277,7 +285,7 @@ class CoastObserver {
   /// [progress] will animate between 0 and 1. It will always start at 0, and end either at 1 (when the transition
   /// completes) or at 0 (when the transition is cancelled).
   void startTransition(
-      Beach beach, Beach previousBeach, BeachTransitionDirection direction, Animation<double>? progress) {}
+      Beach beach, Beach previousBeach, BeachTransitionDirection direction, Animation<double> progress) {}
 }
 
 enum BeachTransitionDirection { left, right }
