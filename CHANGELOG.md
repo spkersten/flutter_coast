@@ -1,3 +1,7 @@
+## 2.0.2
+
+* Make CoastController listenable
+
 ## 2.0.1
 
 * Allow settings the initial page
