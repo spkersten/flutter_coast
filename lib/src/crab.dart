@@ -156,7 +156,7 @@ class CrabController extends CoastObserver {
       )..start();
     }
 
-    WidgetsBinding.instance!.addPostFrameCallback((value) {
+    WidgetsBinding.instance.addPostFrameCallback((value) {
       final toCrabs = Crab._allCrabsFor(beach.subtreeContext!);
 
       for (final tag in _walks.keys) {
